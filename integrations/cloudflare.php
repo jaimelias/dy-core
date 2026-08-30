@@ -433,6 +433,26 @@ if(!function_exists('cloudflare_html_to_pdf')) {
     // printBackground renders bg colors/images — needed for logo headers, shaded tables
     // margin units: mm, px, in, cm
 
+
+    function wrap_html_for_cloudflare ($value, $lang = 'en') {
+        return <<<HTML
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+        <style>
+            body { font-family: Inter, sans-serif; font-size: 10pt;}
+            table, tr, td { vertical-align: top; }
+            td { padding: 12pt 8pt; line-height: 1.25; }
+        </style>
+    </head>
+    <body>
+    $value
+    </body>
+    </html>
+    HTML;
+    }
+
     function cloudflare_html_to_pdf(
         $html, 
         $filename, 
@@ -462,6 +482,10 @@ if(!function_exists('cloudflare_html_to_pdf')) {
         $temp_filename = '/temp_' . uniqid() . '.pdf';
         $pdf_path      = $temp_path . $temp_filename;
 
+
+
+
+
         $response = wp_remote_post(
             "https://api.cloudflare.com/client/v4/accounts/{$account_id}/browser-rendering/pdf",
             array(
@@ -471,7 +495,7 @@ if(!function_exists('cloudflare_html_to_pdf')) {
                     'Content-Type'  => 'application/json',
                 ),
                 'body' => wp_json_encode(array(
-                    'html' => $html,
+                    'html' => wrap_html_for_cloudflare($html),
                     'pdfOptions' => $pdfOptions,
                 )),
             )
@@ -505,4 +529,7 @@ if(!function_exists('cloudflare_html_to_pdf')) {
 
         return array( 'filename' => $filename, 'pathname' => $pdf_path );
     }
+
 }
+
+
