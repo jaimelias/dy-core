@@ -427,8 +427,29 @@ if (!function_exists('cloudflare_ban_ip_address')) {
 
 
 if(!function_exists('cloudflare_html_to_pdf')) {
-    function cloudflare_html_to_pdf($html, $filename, $format = 'a4')
-    {
+
+    // valid formats: letter, legal, tabloid, ledger, a0, a1, a2, a3, a4, a5, a6
+    // headerTemplate and footerTemplate are separate mini HTML documents — they don't inherit CSS from your main invoice HTML.
+    // printBackground renders bg colors/images — needed for logo headers, shaded tables
+    // margin units: mm, px, in, cm
+
+    function cloudflare_html_to_pdf(
+        $html, 
+        $filename, 
+        $pdfOptions = [
+            'format'             => 'a4',
+            'printBackground'    => true,          
+            'margin'             => [
+                'top'    => '20mm',
+                'bottom' => '20mm',
+                'left'   => '15mm',
+                'right'  => '15mm',
+            ],
+            'displayHeaderFooter' => true,
+            'headerTemplate'     => '', 
+            'footerTemplate'     => '',
+        ]
+    ) {
         $pdf_api_token      = trim((string) get_option('dy_cloudflare_pdf_api_token'));
         $account_id = trim((string) get_option('dy_cloudflare_account_id'));
 
@@ -451,10 +472,7 @@ if(!function_exists('cloudflare_html_to_pdf')) {
                 ),
                 'body' => wp_json_encode(array(
                     'html' => $html,
-                    'pdfOptions' => array(
-                        'format' => $format,
-                        'printBackground' => true, // needed for background colors/images in the invoice
-                    ),
+                    'pdfOptions' => $pdfOptions,
                 )),
             )
         );
